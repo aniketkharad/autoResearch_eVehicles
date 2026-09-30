@@ -35,8 +35,8 @@ from prepare import evaluate_predictions, load_splits, load_train_data
 TIME_BUDGET = 120
 N_JOBS = 8
 
-MODEL_ARCHITECTURE = "ensemble_rank_blend_xgb_maxbin4096_w65"
-EXPERIMENT_DESCRIPTION = "Iteration 11: Ultra-high-resolution XGBoost (max_bin=4096, weight=0.65) + LightGBM (max_bin=1024, weight=0.35)"
+MODEL_ARCHITECTURE = "ensemble_asymmetric_depth5_xgb_lgb_netgreen"
+EXPERIMENT_DESCRIPTION = "Iteration 14: Asymmetric ensemble - Depth-5 ultra-high-res XGBoost (max_bin=4096, lr=0.092, eval_metric=logloss, net_green_subsidy + sub_x_inc, w=0.62) + LightGBM (leaves=36, lr=0.088, max_bin=1024, w=0.38)"
 
 RESULTS_FILE = Path("results.tsv")
 HISTORY_FILE = Path(".results_history.tsv")
@@ -89,7 +89,7 @@ def sync_and_read_history() -> Tuple[pd.DataFrame, float]:
     combined.to_csv(HISTORY_FILE, sep="\t", index=False)
     combined.to_csv(RESULTS_FILE, sep="\t", index=False)
 
-    valid_scores = combined[combined["val_roc_auc"].notna()]["val_roc_auc"]
+    valid_scores = combined[(combined["val_roc_auc"].notna()) & (combined["status"] == "keep")]["val_roc_auc"]
     historical_best = float(valid_scores.max()) if len(valid_scores) > 0 else 0.0
 
     return combined, historical_best
@@ -111,7 +111,7 @@ def log_experiment(commit_hash: str, model_arch: str, score: float, status: str,
 # ---------------------------------------------------------------------------
 # Feature Engineering & Preprocessing
 # ---------------------------------------------------------------------------
-def preprocess_features(df: pd.DataFrame) -> pd.DataFrame:
+def preprocess_features(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """Memory-optimized preprocessing with group aggregations and EV domain features."""
     X = df.copy()
 
@@ -141,6 +141,17 @@ def preprocess_features(df: pd.DataFrame) -> pd.DataFrame:
         grp_commute = X.groupby(grp, observed=False)["Daily_Commute_km"].transform("mean")
         X[f"commute_diff_{grp}"] = (X["Daily_Commute_km"] - grp_commute).astype(np.float32)
 
+    # Compute asymmetric interaction features specifically for XGBoost
+    env_num = X["Environmental_Concern_Level"].astype(np.float32)
+    anx_f = anxiety_num.astype(np.float32)
+    sub_f = subsidy_num.astype(np.float32)
+    inc_f = X["Annual_Income_USD"].astype(np.float32)
+
+    extra_xgb = pd.DataFrame({
+        "net_green_subsidy": (sub_f * (env_num - anx_f)).astype(np.float32),
+        "sub_x_inc": (sub_f * (inc_f / 10000.0)).astype(np.float32),
+    })
+
     # Categorical columns conversion
     cat_cols = [
         "Gender",
@@ -160,7 +171,7 @@ def preprocess_features(df: pd.DataFrame) -> pd.DataFrame:
     for col in X.select_dtypes(include=["int64"]).columns:
         X[col] = X[col].astype(np.int32)
 
-    return X
+    return X, extra_xgb
 
 
 # ---------------------------------------------------------------------------
@@ -177,7 +188,7 @@ def run_training() -> float:
     # 1. Load data and splits
     X_raw, y = load_train_data()
     splits = load_splits()
-    X = preprocess_features(X_raw)
+    X, extra_xgb = preprocess_features(X_raw)
     del X_raw
     gc.collect()
 
@@ -198,11 +209,11 @@ def run_training() -> float:
             X_train[f"freq_{col}"] = X_train[col].map(freq_map).fillna(0).astype(np.float32)
             X_val[f"freq_{col}"] = X_val[col].map(freq_map).fillna(0).astype(np.float32)
 
-        # Model A: LightGBM (tuned leaves=40, mcs=30, n_est=650, max_bin=1024)
+        # Model A: LightGBM on base features (leaves=36, max_depth=6, lr=0.088, n_est=500, max_bin=1024)
         model_lgb = lgb.LGBMClassifier(
-            n_estimators=650,
-            learning_rate=0.08,
-            num_leaves=40,
+            n_estimators=500,
+            learning_rate=0.088,
+            num_leaves=36,
             max_depth=6,
             min_child_samples=30,
             max_bin=1024,
@@ -216,24 +227,29 @@ def run_training() -> float:
             X_train,
             y_train,
             eval_set=[(X_val, y_val)],
-            callbacks=[lgb.early_stopping(stopping_rounds=35, verbose=False)],
+            callbacks=[lgb.early_stopping(stopping_rounds=30, verbose=False)],
         )
         preds_lgb = model_lgb.predict_proba(X_val)[:, 1].astype(np.float32)
         del model_lgb
         gc.collect()
 
-        # Model B: XGBoost (tuned lr=0.085, n_estimators=550, max_bin=4096)
+        # Add asymmetric features for Model B (XGBoost)
+        for c in extra_xgb.columns:
+            X_train[c] = extra_xgb[c].iloc[train_idx].values
+            X_val[c] = extra_xgb[c].iloc[val_idx].values
+
+        # Model B: XGBoost on enriched features (depth=5, lr=0.092, n_estimators=450, max_bin=4096, eval_metric=logloss)
         model_xgb = XGBClassifier(
-            n_estimators=550,
-            learning_rate=0.085,
-            max_depth=6,
+            n_estimators=450,
+            learning_rate=0.092,
+            max_depth=5,
             max_bin=4096,
             tree_method="hist",
             enable_categorical=True,
             n_jobs=N_JOBS,
             random_state=101 + fold,
-            eval_metric="auc",
-            early_stopping_rounds=35,
+            eval_metric="logloss",
+            early_stopping_rounds=30,
         )
         model_xgb.fit(
             X_train,
@@ -243,10 +259,10 @@ def run_training() -> float:
         )
         preds_xgb = model_xgb.predict_proba(X_val)[:, 1].astype(np.float32)
 
-        # Percentile Rank-Normalized Blending (0.35 LGBM + 0.65 XGBoost)
+        # Percentile Rank-Normalized Blending (0.38 LGBM + 0.62 XGBoost)
         rank_lgb = rankdata(preds_lgb) / len(preds_lgb)
         rank_xgb = rankdata(preds_xgb) / len(preds_xgb)
-        fold_probs = (0.35 * rank_lgb + 0.65 * rank_xgb).astype(np.float32)
+        fold_probs = (0.38 * rank_lgb + 0.62 * rank_xgb).astype(np.float32)
         oof_preds[val_idx] = fold_probs
 
         fold_score = evaluate_predictions(y_val, fold_probs)
