@@ -24,6 +24,7 @@ warnings.filterwarnings("ignore")
 import lightgbm as lgb
 import numpy as np
 import pandas as pd
+from xgboost import XGBClassifier
 
 from prepare import evaluate_predictions, load_splits, load_train_data
 
@@ -33,8 +34,8 @@ from prepare import evaluate_predictions, load_splits, load_train_data
 TIME_BUDGET = 120
 N_JOBS = 8
 
-MODEL_ARCHITECTURE = "lightgbm_domain_features_v1"
-EXPERIMENT_DESCRIPTION = "Iteration 1: EV domain features (total charging, commute/station, income/car, unmitigated anxiety, subsidy synergy)"
+MODEL_ARCHITECTURE = "ensemble_lgb_xgb_group_aggs"
+EXPERIMENT_DESCRIPTION = "Iteration 3: Group aggregations (City_Type, Car_Type income/commute diffs) + LightGBM (0.65) / XGBoost (0.35) blend"
 
 RESULTS_FILE = Path("results.tsv")
 HISTORY_FILE = Path(".results_history.tsv")
@@ -110,13 +111,10 @@ def log_experiment(commit_hash: str, model_arch: str, score: float, status: str,
 # Feature Engineering & Preprocessing
 # ---------------------------------------------------------------------------
 def preprocess_features(df: pd.DataFrame) -> pd.DataFrame:
-    """Memory-optimized preprocessing and domain feature engineering.
-
-    Downcasts numeric types to float32 and int32 to strictly observe 8GB RAM ceiling.
-    """
+    """Memory-optimized preprocessing with group aggregations and EV domain features."""
     X = df.copy()
 
-    # Domain interaction features
+    # EV Domain features
     total_charging = X["Charging_Stations_Near_Home"] + X["Charging_Stations_Near_Work"]
     X["charging_stations_total"] = total_charging.astype(np.int32)
     X["charging_home_work_ratio"] = (X["Charging_Stations_Near_Home"] / (X["Charging_Stations_Near_Work"] + 1.0)).astype(np.float32)
@@ -134,6 +132,13 @@ def preprocess_features(df: pd.DataFrame) -> pd.DataFrame:
 
     X["unmitigated_range_anxiety"] = (anxiety_num * (1 - home_charge_num)).astype(np.int32)
     X["green_subsidy_synergy"] = (X["Environmental_Concern_Level"] * subsidy_num).astype(np.float32)
+
+    # Group aggregations (income & commute deviations relative to categorical cohorts)
+    for grp in ["City_Type", "Current_Car_Type"]:
+        grp_income = X.groupby(grp, observed=False)["Annual_Income_USD"].transform("mean")
+        X[f"income_diff_{grp}"] = (X["Annual_Income_USD"] - grp_income).astype(np.float32)
+        grp_commute = X.groupby(grp, observed=False)["Daily_Commute_km"].transform("mean")
+        X[f"commute_diff_{grp}"] = (X["Daily_Commute_km"] - grp_commute).astype(np.float32)
 
     # Categorical columns conversion
     cat_cols = [
@@ -183,7 +188,8 @@ def run_training() -> float:
         X_train, y_train = X.iloc[train_idx], y.iloc[train_idx]
         X_val, y_val = X.iloc[val_idx], y.iloc[val_idx]
 
-        model = lgb.LGBMClassifier(
+        # Model A: LightGBM
+        model_lgb = lgb.LGBMClassifier(
             n_estimators=300,
             learning_rate=0.08,
             num_leaves=31,
@@ -194,22 +200,45 @@ def run_training() -> float:
             n_jobs=N_JOBS,
             verbose=-1,
         )
-
-        model.fit(
+        model_lgb.fit(
             X_train,
             y_train,
             eval_set=[(X_val, y_val)],
             callbacks=[lgb.early_stopping(stopping_rounds=30, verbose=False)],
         )
+        preds_lgb = model_lgb.predict_proba(X_val)[:, 1].astype(np.float32)
+        del model_lgb
+        gc.collect()
 
-        val_probs = model.predict_proba(X_val)[:, 1].astype(np.float32)
-        oof_preds[val_idx] = val_probs
+        # Model B: XGBoost (hist method for high speed)
+        model_xgb = XGBClassifier(
+            n_estimators=350,
+            learning_rate=0.08,
+            max_depth=6,
+            tree_method="hist",
+            enable_categorical=True,
+            n_jobs=N_JOBS,
+            random_state=101 + fold,
+            eval_metric="auc",
+            early_stopping_rounds=30,
+        )
+        model_xgb.fit(
+            X_train,
+            y_train,
+            eval_set=[(X_val, y_val)],
+            verbose=False,
+        )
+        preds_xgb = model_xgb.predict_proba(X_val)[:, 1].astype(np.float32)
 
-        fold_score = evaluate_predictions(y_val, val_probs)
+        # Weighted blend (0.65 LGBM + 0.35 XGBoost)
+        fold_probs = (0.65 * preds_lgb + 0.35 * preds_xgb).astype(np.float32)
+        oof_preds[val_idx] = fold_probs
+
+        fold_score = evaluate_predictions(y_val, fold_probs)
         fold_elapsed = time.time() - fold_start
         print(f"Fold {fold} - val_roc_auc: {fold_score:.6f} ({fold_elapsed:.2f}s)")
 
-        del model, X_train, y_train, X_val, y_val
+        del model_xgb, X_train, y_train, X_val, y_val
         gc.collect()
 
         elapsed_so_far = time.time() - start_time
