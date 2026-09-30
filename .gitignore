@@ -1,0 +1,15 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environment
+.venv/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Ratchet loop durability ledger (preserves regression records across git reset --hard)
+.results_history.tsv

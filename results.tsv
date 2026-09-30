@@ -1,0 +1,2 @@
+timestamp	commit_hash	model_architecture	val_roc_auc	status	description
+2026-09-30 17:10:44	3bc843a	lightgbm_baseline	0.941768	keep	Initial baseline: LightGBM with native categorical handling
