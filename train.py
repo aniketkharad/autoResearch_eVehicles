@@ -35,8 +35,8 @@ from prepare import evaluate_predictions, load_splits, load_train_data
 TIME_BUDGET = 120
 N_JOBS = 8
 
-MODEL_ARCHITECTURE = "ensemble_rank_blend_converged_lgb650_xgb550"
-EXPERIMENT_DESCRIPTION = "Iteration 9: Full convergence budget (LGBM n_est=650, XGB n_est=550, early_stopping=35) with 0.50/0.50 rank blend"
+MODEL_ARCHITECTURE = "ensemble_rank_blend_high_res_bins"
+EXPERIMENT_DESCRIPTION = "Iteration 10: High-resolution histogram bins (LGBM max_bin=1024, XGBoost max_bin=2048) with 0.50/0.50 rank blend"
 
 RESULTS_FILE = Path("results.tsv")
 HISTORY_FILE = Path(".results_history.tsv")
@@ -198,13 +198,14 @@ def run_training() -> float:
             X_train[f"freq_{col}"] = X_train[col].map(freq_map).fillna(0).astype(np.float32)
             X_val[f"freq_{col}"] = X_val[col].map(freq_map).fillna(0).astype(np.float32)
 
-        # Model A: LightGBM (tuned leaves=40, mcs=30, n_est=650)
+        # Model A: LightGBM (tuned leaves=40, mcs=30, n_est=650, max_bin=1024)
         model_lgb = lgb.LGBMClassifier(
             n_estimators=650,
             learning_rate=0.08,
             num_leaves=40,
             max_depth=6,
             min_child_samples=30,
+            max_bin=1024,
             subsample=0.8,
             colsample_bytree=0.8,
             random_state=101 + fold,
@@ -221,11 +222,12 @@ def run_training() -> float:
         del model_lgb
         gc.collect()
 
-        # Model B: XGBoost (tuned lr=0.085, n_estimators=550)
+        # Model B: XGBoost (tuned lr=0.085, n_estimators=550, max_bin=2048)
         model_xgb = XGBClassifier(
             n_estimators=550,
             learning_rate=0.085,
             max_depth=6,
+            max_bin=2048,
             tree_method="hist",
             enable_categorical=True,
             n_jobs=N_JOBS,
