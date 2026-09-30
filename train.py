@@ -35,8 +35,8 @@ from prepare import evaluate_predictions, load_splits, load_train_data
 TIME_BUDGET = 120
 N_JOBS = 8
 
-MODEL_ARCHITECTURE = "ensemble_rank_blend_lgb_xgb"
-EXPERIMENT_DESCRIPTION = "Iteration 4: Percentile Rank-Normalized Blending (0.60 LGBM + 0.40 XGBoost) with Group Aggregations"
+MODEL_ARCHITECTURE = "ensemble_rank_blend_freq_encoded"
+EXPERIMENT_DESCRIPTION = "Iteration 5: Strict in-fold frequency encoding (Income, Commute, Age) + Percentile Rank Blending (0.60 LGB + 0.40 XGB)"
 
 RESULTS_FILE = Path("results.tsv")
 HISTORY_FILE = Path(".results_history.tsv")
@@ -182,12 +182,21 @@ def run_training() -> float:
     gc.collect()
 
     oof_preds = np.zeros(len(y), dtype=np.float32)
+    freq_cols = ["Annual_Income_USD", "Daily_Commute_km", "Age"]
 
     # 2. Iterate through 5 deterministic folds
     for fold, (train_idx, val_idx) in enumerate(splits):
         fold_start = time.time()
-        X_train, y_train = X.iloc[train_idx], y.iloc[train_idx]
-        X_val, y_val = X.iloc[val_idx], y.iloc[val_idx]
+        X_train = X.iloc[train_idx].copy()
+        y_train = y.iloc[train_idx].copy()
+        X_val = X.iloc[val_idx].copy()
+        y_val = y.iloc[val_idx].copy()
+
+        # Strict in-fold frequency encoding
+        for col in freq_cols:
+            freq_map = X_train[col].value_counts(normalize=True)
+            X_train[f"freq_{col}"] = X_train[col].map(freq_map).fillna(0).astype(np.float32)
+            X_val[f"freq_{col}"] = X_val[col].map(freq_map).fillna(0).astype(np.float32)
 
         # Model A: LightGBM
         model_lgb = lgb.LGBMClassifier(

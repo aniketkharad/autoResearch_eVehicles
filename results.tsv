@@ -4,3 +4,4 @@ timestamp	commit_hash	model_architecture	val_roc_auc	status	description
 2026-09-30 17:26:47	e0a2871	lightgbm_affordability_interactions_leaves63	0.94166	regression	Iteration 2: Affordability x Concern interactions (Income*Env, Income/Age, log1p_income) + num_leaves=63
 2026-09-30 17:31:46	e0a2871	ensemble_lgb_xgb_group_aggs	0.941931	keep	Iteration 3: Group aggregations (City_Type, Car_Type income/commute diffs) + LightGBM (0.65) / XGBoost (0.35) blend
 2026-09-30 17:37:27	4a79811	ensemble_rank_blend_lgb_xgb	0.941949	keep	Iteration 4: Percentile Rank-Normalized Blending (0.60 LGBM + 0.40 XGBoost) with Group Aggregations
+2026-09-30 17:41:20	43dc1f7	ensemble_rank_blend_freq_encoded	0.942887	keep	Iteration 5: Strict in-fold frequency encoding (Income, Commute, Age) + Percentile Rank Blending (0.60 LGB + 0.40 XGB)
