@@ -35,8 +35,8 @@ from prepare import evaluate_predictions, load_splits, load_train_data
 TIME_BUDGET = 120
 N_JOBS = 8
 
-MODEL_ARCHITECTURE = "ensemble_rank_blend_high_res_bins"
-EXPERIMENT_DESCRIPTION = "Iteration 10: High-resolution histogram bins (LGBM max_bin=1024, XGBoost max_bin=2048) with 0.50/0.50 rank blend"
+MODEL_ARCHITECTURE = "ensemble_rank_blend_xgb_maxbin4096_w65"
+EXPERIMENT_DESCRIPTION = "Iteration 11: Ultra-high-resolution XGBoost (max_bin=4096, weight=0.65) + LightGBM (max_bin=1024, weight=0.35)"
 
 RESULTS_FILE = Path("results.tsv")
 HISTORY_FILE = Path(".results_history.tsv")
@@ -222,12 +222,12 @@ def run_training() -> float:
         del model_lgb
         gc.collect()
 
-        # Model B: XGBoost (tuned lr=0.085, n_estimators=550, max_bin=2048)
+        # Model B: XGBoost (tuned lr=0.085, n_estimators=550, max_bin=4096)
         model_xgb = XGBClassifier(
             n_estimators=550,
             learning_rate=0.085,
             max_depth=6,
-            max_bin=2048,
+            max_bin=4096,
             tree_method="hist",
             enable_categorical=True,
             n_jobs=N_JOBS,
@@ -243,10 +243,10 @@ def run_training() -> float:
         )
         preds_xgb = model_xgb.predict_proba(X_val)[:, 1].astype(np.float32)
 
-        # Percentile Rank-Normalized Blending (0.50 LGBM + 0.50 XGBoost)
+        # Percentile Rank-Normalized Blending (0.35 LGBM + 0.65 XGBoost)
         rank_lgb = rankdata(preds_lgb) / len(preds_lgb)
         rank_xgb = rankdata(preds_xgb) / len(preds_xgb)
-        fold_probs = (0.50 * rank_lgb + 0.50 * rank_xgb).astype(np.float32)
+        fold_probs = (0.35 * rank_lgb + 0.65 * rank_xgb).astype(np.float32)
         oof_preds[val_idx] = fold_probs
 
         fold_score = evaluate_predictions(y_val, fold_probs)

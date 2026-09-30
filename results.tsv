@@ -10,3 +10,4 @@ timestamp	commit_hash	model_architecture	val_roc_auc	status	description
 2026-09-30 18:11:55	c4c819f	ensemble_rank_blend_xgb_lr085	0.942943	keep	Iteration 8: XGBoost tuned lr=0.085, n_estimators=380 + LightGBM leaves=40, mcs=30 rank blend
 2026-09-30 18:28:45	c8c0696	ensemble_rank_blend_converged_lgb650_xgb550	0.943039	keep	Iteration 9: Full convergence budget (LGBM n_est=650, XGB n_est=550, early_stopping=35) with 0.50/0.50 rank blend
 2026-09-30 18:33:51	1f974fa	ensemble_rank_blend_high_res_bins	0.943521	keep	Iteration 10: High-resolution histogram bins (LGBM max_bin=1024, XGBoost max_bin=2048) with 0.50/0.50 rank blend
+2026-09-30 18:38:51	a89cbc6	ensemble_rank_blend_xgb_maxbin4096_w65	0.943616	keep	Iteration 11: Ultra-high-resolution XGBoost (max_bin=4096, weight=0.65) + LightGBM (max_bin=1024, weight=0.35)
