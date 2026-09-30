@@ -35,8 +35,8 @@ from prepare import evaluate_predictions, load_splits, load_train_data
 TIME_BUDGET = 120
 N_JOBS = 8
 
-MODEL_ARCHITECTURE = "ensemble_rank_blend_leaves40_mcs30"
-EXPERIMENT_DESCRIPTION = "Iteration 7: LightGBM tuned leaves=40, min_child_samples=30 within 0.45 LGB + 0.55 XGB rank blend"
+MODEL_ARCHITECTURE = "ensemble_rank_blend_xgb_lr085"
+EXPERIMENT_DESCRIPTION = "Iteration 8: XGBoost tuned lr=0.085, n_estimators=380 + LightGBM leaves=40, mcs=30 rank blend"
 
 RESULTS_FILE = Path("results.tsv")
 HISTORY_FILE = Path(".results_history.tsv")
@@ -221,10 +221,10 @@ def run_training() -> float:
         del model_lgb
         gc.collect()
 
-        # Model B: XGBoost (hist method for high speed)
+        # Model B: XGBoost (tuned lr=0.085, n_estimators=380)
         model_xgb = XGBClassifier(
-            n_estimators=350,
-            learning_rate=0.08,
+            n_estimators=380,
+            learning_rate=0.085,
             max_depth=6,
             tree_method="hist",
             enable_categorical=True,

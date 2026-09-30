@@ -7,3 +7,4 @@ timestamp	commit_hash	model_architecture	val_roc_auc	status	description
 2026-09-30 17:41:20	43dc1f7	ensemble_rank_blend_freq_encoded	0.942887	keep	Iteration 5: Strict in-fold frequency encoding (Income, Commute, Age) + Percentile Rank Blending (0.60 LGB + 0.40 XGB)
 2026-09-30 17:44:46	d073c8b	ensemble_rank_blend_xgb_dominant	0.942908	keep	Iteration 6: XGBoost-dominant rank blending (0.45 LGB + 0.55 XGB) with in-fold frequency encoding
 2026-09-30 18:01:31	8bce08e	ensemble_rank_blend_leaves40_mcs30	0.942915	keep	Iteration 7: LightGBM tuned leaves=40, min_child_samples=30 within 0.45 LGB + 0.55 XGB rank blend
+2026-09-30 18:11:55	c4c819f	ensemble_rank_blend_xgb_lr085	0.942943	keep	Iteration 8: XGBoost tuned lr=0.085, n_estimators=380 + LightGBM leaves=40, mcs=30 rank blend
