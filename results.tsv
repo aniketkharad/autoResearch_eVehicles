@@ -8,3 +8,4 @@ timestamp	commit_hash	model_architecture	val_roc_auc	status	description
 2026-09-30 17:44:46	d073c8b	ensemble_rank_blend_xgb_dominant	0.942908	keep	Iteration 6: XGBoost-dominant rank blending (0.45 LGB + 0.55 XGB) with in-fold frequency encoding
 2026-09-30 18:01:31	8bce08e	ensemble_rank_blend_leaves40_mcs30	0.942915	keep	Iteration 7: LightGBM tuned leaves=40, min_child_samples=30 within 0.45 LGB + 0.55 XGB rank blend
 2026-09-30 18:11:55	c4c819f	ensemble_rank_blend_xgb_lr085	0.942943	keep	Iteration 8: XGBoost tuned lr=0.085, n_estimators=380 + LightGBM leaves=40, mcs=30 rank blend
+2026-09-30 18:28:45	c8c0696	ensemble_rank_blend_converged_lgb650_xgb550	0.943039	keep	Iteration 9: Full convergence budget (LGBM n_est=650, XGB n_est=550, early_stopping=35) with 0.50/0.50 rank blend
