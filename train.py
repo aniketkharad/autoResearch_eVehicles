@@ -35,8 +35,8 @@ from prepare import evaluate_predictions, load_splits, load_train_data
 TIME_BUDGET = 120
 N_JOBS = 8
 
-MODEL_ARCHITECTURE = "ensemble_rank_blend_xgb_dominant"
-EXPERIMENT_DESCRIPTION = "Iteration 6: XGBoost-dominant rank blending (0.45 LGB + 0.55 XGB) with in-fold frequency encoding"
+MODEL_ARCHITECTURE = "ensemble_rank_blend_leaves40_mcs30"
+EXPERIMENT_DESCRIPTION = "Iteration 7: LightGBM tuned leaves=40, min_child_samples=30 within 0.45 LGB + 0.55 XGB rank blend"
 
 RESULTS_FILE = Path("results.tsv")
 HISTORY_FILE = Path(".results_history.tsv")
@@ -198,12 +198,13 @@ def run_training() -> float:
             X_train[f"freq_{col}"] = X_train[col].map(freq_map).fillna(0).astype(np.float32)
             X_val[f"freq_{col}"] = X_val[col].map(freq_map).fillna(0).astype(np.float32)
 
-        # Model A: LightGBM
+        # Model A: LightGBM (tuned num_leaves=40, min_child_samples=30)
         model_lgb = lgb.LGBMClassifier(
             n_estimators=300,
             learning_rate=0.08,
-            num_leaves=31,
+            num_leaves=40,
             max_depth=6,
+            min_child_samples=30,
             subsample=0.8,
             colsample_bytree=0.8,
             random_state=101 + fold,
