@@ -5,3 +5,4 @@ timestamp	commit_hash	model_architecture	val_roc_auc	status	description
 2026-09-30 17:31:46	e0a2871	ensemble_lgb_xgb_group_aggs	0.941931	keep	Iteration 3: Group aggregations (City_Type, Car_Type income/commute diffs) + LightGBM (0.65) / XGBoost (0.35) blend
 2026-09-30 17:37:27	4a79811	ensemble_rank_blend_lgb_xgb	0.941949	keep	Iteration 4: Percentile Rank-Normalized Blending (0.60 LGBM + 0.40 XGBoost) with Group Aggregations
 2026-09-30 17:41:20	43dc1f7	ensemble_rank_blend_freq_encoded	0.942887	keep	Iteration 5: Strict in-fold frequency encoding (Income, Commute, Age) + Percentile Rank Blending (0.60 LGB + 0.40 XGB)
+2026-09-30 17:44:46	d073c8b	ensemble_rank_blend_xgb_dominant	0.942908	keep	Iteration 6: XGBoost-dominant rank blending (0.45 LGB + 0.55 XGB) with in-fold frequency encoding

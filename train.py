@@ -35,8 +35,8 @@ from prepare import evaluate_predictions, load_splits, load_train_data
 TIME_BUDGET = 120
 N_JOBS = 8
 
-MODEL_ARCHITECTURE = "ensemble_rank_blend_freq_encoded"
-EXPERIMENT_DESCRIPTION = "Iteration 5: Strict in-fold frequency encoding (Income, Commute, Age) + Percentile Rank Blending (0.60 LGB + 0.40 XGB)"
+MODEL_ARCHITECTURE = "ensemble_rank_blend_xgb_dominant"
+EXPERIMENT_DESCRIPTION = "Iteration 6: XGBoost-dominant rank blending (0.45 LGB + 0.55 XGB) with in-fold frequency encoding"
 
 RESULTS_FILE = Path("results.tsv")
 HISTORY_FILE = Path(".results_history.tsv")
@@ -240,10 +240,10 @@ def run_training() -> float:
         )
         preds_xgb = model_xgb.predict_proba(X_val)[:, 1].astype(np.float32)
 
-        # Percentile Rank-Normalized Blending (0.60 LGBM + 0.40 XGBoost)
+        # Percentile Rank-Normalized Blending (0.45 LGBM + 0.55 XGBoost)
         rank_lgb = rankdata(preds_lgb) / len(preds_lgb)
         rank_xgb = rankdata(preds_xgb) / len(preds_xgb)
-        fold_probs = (0.60 * rank_lgb + 0.40 * rank_xgb).astype(np.float32)
+        fold_probs = (0.45 * rank_lgb + 0.55 * rank_xgb).astype(np.float32)
         oof_preds[val_idx] = fold_probs
 
         fold_score = evaluate_predictions(y_val, fold_probs)
