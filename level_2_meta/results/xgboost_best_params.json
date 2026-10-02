@@ -1,0 +1,20 @@
+{
+  "model_name": "xgboost",
+  "selected_trial": 38,
+  "baseline_auc": 0.9023196536796538,
+  "best_auc": 0.9048003463203462,
+  "improvement": 0.0024806926406923946,
+  "best_iteration": 185,
+  "training_time": 2.214125871658325,
+  "best_params": {
+    "max_depth": 4,
+    "min_child_weight": 2,
+    "learning_rate": 0.04990589363306641,
+    "gamma": 0.24466120282559253,
+    "subsample": 0.9,
+    "colsample_bytree": 0.6,
+    "reg_alpha": 0.0006286728242480444,
+    "reg_lambda": 0.031675833388080915,
+    "max_bin": 1024
+  }
+}

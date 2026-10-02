@@ -12,4 +12,8 @@ dependencies = [
     "xgboost>=2.0.0",
     "rich>=13.0.0",
     "catboost>=1.2.10",
+    "optuna>=5.0.0",
+    "tabpfn>=9.0.0",
+    "kaggle>=2.2.4",
+    "tabpfn-client>=0.6.1",
 ]

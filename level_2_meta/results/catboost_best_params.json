@@ -1,0 +1,17 @@
+{
+  "model_name": "catboost",
+  "selected_trial": 38,
+  "baseline_auc": 0.9034670129870129,
+  "best_auc": 0.9042825974025973,
+  "improvement": 0.0008155844155843806,
+  "best_iteration": 94,
+  "training_time": 3.350801944732666,
+  "best_params": {
+    "depth": 4,
+    "l2_leaf_reg": 3.7107651036125997,
+    "learning_rate": 0.07286162125730708,
+    "random_strength": 0.340550772525093,
+    "bagging_temperature": 0.7850980955833907,
+    "border_count": 128
+  }
+}

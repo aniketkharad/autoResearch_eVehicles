@@ -1,0 +1,159 @@
+{
+  "timestamp": "2026-09-30 23:19:33",
+  "model_names": [
+    "LightGBM",
+    "XGBoost",
+    "CatBoost",
+    "TabPFN"
+  ],
+  "individual_aucs": {
+    "LightGBM": 0.90447,
+    "XGBoost": 0.90449,
+    "CatBoost": 0.90348,
+    "TabPFN": 0.90512
+  },
+  "equal_weight_blend_auc": 0.90576,
+  "trees_only_equal_auc": 0.90533,
+  "trees_only_optimized_auc": 0.90534,
+  "trees_only_weights": {
+    "LightGBM": 0.3236221169602015,
+    "XGBoost": 0.32862672004769766,
+    "CatBoost": 0.34775116299210085
+  },
+  "optimized_four_model_auc": 0.90595,
+  "final_weights": {
+    "LightGBM": 0.22397,
+    "XGBoost": 0.21584,
+    "CatBoost": 0.0458,
+    "TabPFN": 0.51439
+  },
+  "best_start_initialization": "Nelder-Mead Refinement",
+  "spearman_correlation_matrix": {
+    "LightGBM": {
+      "LightGBM": 1.0,
+      "XGBoost": 0.9913623776146697,
+      "CatBoost": 0.981422520510996,
+      "TabPFN": 0.9837899349368828
+    },
+    "XGBoost": {
+      "LightGBM": 0.9913623776146698,
+      "XGBoost": 1.0,
+      "CatBoost": 0.9826626439351481,
+      "TabPFN": 0.9841746416261944
+    },
+    "CatBoost": {
+      "LightGBM": 0.981422520510996,
+      "XGBoost": 0.9826626439351482,
+      "CatBoost": 1.0,
+      "TabPFN": 0.9885517799787343
+    },
+    "TabPFN": {
+      "LightGBM": 0.9837899349368827,
+      "XGBoost": 0.9841746416261943,
+      "CatBoost": 0.9885517799787343,
+      "TabPFN": 1.0
+    }
+  },
+  "optimization_history": [
+    {
+      "init_name": "Equal Weights",
+      "solver": "SLSQP",
+      "start_weights": [
+        0.25,
+        0.25,
+        0.25,
+        0.25
+      ],
+      "final_weights": [
+        0.2507,
+        0.2498,
+        0.2498,
+        0.2498
+      ],
+      "final_auc": 0.9057656796536797,
+      "converged": true,
+      "iterations": 2,
+      "message": "Optimization terminated successfully"
+    },
+    {
+      "init_name": "Biased towards LightGBM",
+      "solver": "SLSQP",
+      "start_weights": [
+        0.9,
+        0.0333,
+        0.0333,
+        0.0333
+      ],
+      "final_weights": [
+        0.9001,
+        0.0333,
+        0.0333,
+        0.0333
+      ],
+      "final_auc": 0.9047838614718615,
+      "converged": true,
+      "iterations": 2,
+      "message": "Optimization terminated successfully"
+    },
+    {
+      "init_name": "Biased towards XGBoost",
+      "solver": "SLSQP",
+      "start_weights": [
+        0.0333,
+        0.9,
+        0.0333,
+        0.0333
+      ],
+      "final_weights": [
+        0.0333,
+        0.8991,
+        0.0333,
+        0.0343
+      ],
+      "final_auc": 0.9048367792207793,
+      "converged": true,
+      "iterations": 2,
+      "message": "Optimization terminated successfully"
+    },
+    {
+      "init_name": "Biased towards CatBoost",
+      "solver": "SLSQP",
+      "start_weights": [
+        0.0333,
+        0.0333,
+        0.9,
+        0.0333
+      ],
+      "final_weights": [
+        0.0343,
+        0.0333,
+        0.8991,
+        0.0333
+      ],
+      "final_auc": 0.9039220086580088,
+      "converged": true,
+      "iterations": 2,
+      "message": "Optimization terminated successfully"
+    },
+    {
+      "init_name": "Biased towards TabPFN",
+      "solver": "SLSQP",
+      "start_weights": [
+        0.0333,
+        0.0333,
+        0.0333,
+        0.9
+      ],
+      "final_weights": [
+        0.0333,
+        0.0333,
+        0.0333,
+        0.9
+      ],
+      "final_auc": 0.905348987012987,
+      "converged": true,
+      "iterations": 1,
+      "message": "Optimization terminated successfully"
+    }
+  ]
+}

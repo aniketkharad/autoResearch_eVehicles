@@ -1,0 +1,31 @@
+{
+  "dataset": "train.csv (668,665 samples)",
+  "models": [
+    "LightGBM",
+    "XGBoost",
+    "CatBoost",
+    "TabPFN"
+  ],
+  "individual_aucs": {
+    "LightGBM": 0.943353,
+    "XGBoost": 0.943651,
+    "CatBoost": 0.942507,
+    "TabPFN": 0.937922
+  },
+  "uniform_weights": {
+    "LightGBM": 0.25,
+    "XGBoost": 0.25,
+    "CatBoost": 0.25,
+    "TabPFN": 0.25
+  },
+  "uniform_auc": 0.942885,
+  "optimal_weights": {
+    "LightGBM": 0.262407,
+    "XGBoost": 0.737579,
+    "CatBoost": 1.4e-05,
+    "TabPFN": 0.0
+  },
+  "stacked_auc": 0.943691,
+  "max_individual_auc": 0.943651,
+  "lift_over_best_single": 4e-05
+}

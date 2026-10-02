@@ -14,3 +14,7 @@ Thumbs.db
 # Ratchet loop durability ledger (preserves regression records across git reset --hard)
 .results_history.tsv
 catboost_info/
+
+# TabPFN local try directory
+tabpfn_try5/
+
