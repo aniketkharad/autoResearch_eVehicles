@@ -34,9 +34,9 @@ logger = setup_logger("step1_data")
 
 TARGET_COL = "Will_Buy_EV"
 ID_COL = "Buyer_ID"
-DEFAULT_DEV_CSV = PROJECT_ROOT / "EV_Adoption_and_Range_Anxiety_Dataset.csv"
-DEFAULT_SYNTH_CSV = PROJECT_ROOT / "train.csv"
-DEFAULT_TEST_CSV = PROJECT_ROOT / "test.csv"
+DEFAULT_DEV_CSV = PROJECT_ROOT / "data" / "EV_Adoption_and_Range_Anxiety_Dataset.csv"
+DEFAULT_SYNTH_CSV = PROJECT_ROOT / "data" / "train.csv"
+DEFAULT_TEST_CSV = PROJECT_ROOT / "data" / "test.csv"
 
 
 def inspect_dataset(df: pd.DataFrame, dataset_name: str = "Dataset") -> Dict[str, any]:

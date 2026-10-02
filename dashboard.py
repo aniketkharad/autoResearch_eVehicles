@@ -22,8 +22,9 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
-RESULTS_FILE = Path("results.tsv")
-HISTORY_FILE = Path(".results_history.tsv")
+BASE_DIR = Path(__file__).resolve().parent
+RESULTS_FILE = BASE_DIR / "results.tsv"
+HISTORY_FILE = BASE_DIR / ".results_history.tsv"
 
 
 def load_all_results() -> pd.DataFrame:

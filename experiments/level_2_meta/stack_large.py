@@ -23,11 +23,12 @@ from sklearn.metrics import roc_auc_score
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("stack_large")
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-BASE_DIR = PROJECT_ROOT / "level_2_meta"
+BASE_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = BASE_DIR.parent.parent
+DATA_DIR = PROJECT_ROOT / "data"
 CACHE_LARGE_DIR = BASE_DIR / "cache_large"
 RESULTS_LARGE_DIR = BASE_DIR / "results_large"
-TRAIN_CSV = PROJECT_ROOT / "train.csv"
+TRAIN_CSV = DATA_DIR / "train.csv"
 TARGET_COL = "Will_Buy_EV"
 
 MODELS = ["LightGBM", "XGBoost", "CatBoost", "TabPFN"]

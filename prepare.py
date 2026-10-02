@@ -33,8 +33,10 @@ ID_COL: str = "id"                 # Identifier column to drop from features
 SPLITS_FILE: str = "splits.npy"    # Disk storage for invariant fold assignments
 
 BASE_DIR = Path(__file__).resolve().parent
-TRAIN_PATH = BASE_DIR / "train.csv" if (BASE_DIR / "train.csv").exists() else BASE_DIR / "data" / "train.csv"
-TEST_PATH = BASE_DIR / "test.csv" if (BASE_DIR / "test.csv").exists() else BASE_DIR / "data" / "test.csv"
+DATA_DIR = BASE_DIR / "data"
+TRAIN_PATH = DATA_DIR / "train.csv"
+TEST_PATH = DATA_DIR / "test.csv"
+SPLITS_PATH = DATA_DIR / "splits.npy"
 
 
 # ---------------------------------------------------------------------------
@@ -119,11 +121,10 @@ def load_test_data() -> None:
 def prepare_splits(force: bool = False) -> np.ndarray:
     """Generates and persists invariant stratified 5-fold CV assignments.
 
-    Saves a 1D int8 array of fold IDs (0 to N_SPLITS-1) to splits.npy.
+    Saves a 1D int8 array of fold IDs (0 to N_SPLITS-1) to data/splits.npy.
     """
-    splits_path = BASE_DIR / SPLITS_FILE
-    if splits_path.exists() and not force:
-        return np.load(splits_path)
+    if SPLITS_PATH.exists() and not force:
+        return np.load(SPLITS_PATH)
 
     print(f"Generating deterministic stratified {N_SPLITS}-fold splits (seed={RANDOM_STATE})...")
     _, y = load_train_data()
@@ -134,8 +135,8 @@ def prepare_splits(force: bool = False) -> np.ndarray:
     for fold, (_, val_idx) in enumerate(skf.split(np.zeros(len(y)), y)):
         fold_assignments[val_idx] = fold
 
-    np.save(splits_path, fold_assignments)
-    print(f"Saved invariant fold assignments to {splits_path} ({len(fold_assignments):,} samples)")
+    np.save(SPLITS_PATH, fold_assignments)
+    print(f"Saved invariant fold assignments to {SPLITS_PATH} ({len(fold_assignments):,} samples)")
     return fold_assignments
 
 
@@ -145,11 +146,10 @@ def load_splits() -> List[Tuple[np.ndarray, np.ndarray]]:
     Returns:
         List of 5 tuples: (train_indices, val_indices)
     """
-    splits_path = BASE_DIR / SPLITS_FILE
-    if not splits_path.exists():
+    if not SPLITS_PATH.exists():
         prepare_splits()
 
-    fold_assignments = np.load(splits_path)
+    fold_assignments = np.load(SPLITS_PATH)
     splits = []
     for fold in range(N_SPLITS):
         train_idx = np.where(fold_assignments != fold)[0]

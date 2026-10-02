@@ -12,7 +12,7 @@ The repository is deliberately minimal and relies on flat files and local git:
 
 | File | Status | Role |
 | :--- | :--- | :--- |
-| `prepare.py` | **LOCKED (IMMUTABLE)** | Dataset loader, deterministic stratified 5-fold CV splits (`splits.npy`), fixed evaluation harness (`evaluate_predictions`). Locks `test.csv` out of reach. |
+| `prepare.py` | **LOCKED (IMMUTABLE)** | Dataset loader, deterministic stratified 5-fold CV splits (`data/splits.npy`), fixed evaluation harness (`evaluate_predictions`). Locks `data/test.csv` out of reach. |
 | `train.py` | **MUTABLE (SANDBOX)** | **The ONLY file modified by the agent.** Contains feature engineering, model architecture, training loop, and experiment logging to `results.tsv`. |
 | `program.md` | **HUMAN-LED** | Instructions, constraints, and research directions for the autonomous agent. |
 | `dashboard.py` | **READ-ONLY** | Rich terminal dashboard displaying all-time best ROC AUC, win rate, and architecture breakdown. |
@@ -23,13 +23,13 @@ The repository is deliberately minimal and relies on flat files and local git:
 ## 2. Constraints & Rules
 
 1. **Only Edit `train.py`**:
-   - You must never modify `prepare.py`, `dashboard.py`, or `splits.npy`.
+   - You must never modify `prepare.py`, `dashboard.py`, or `data/splits.npy`.
    - `prepare.evaluate_predictions(y_true, y_pred_proba)` is the ground truth evaluation harness. Do not game, bypass, or alter it.
 2. **Strict 60-Second Wall-Clock Budget**:
    - Every experiment run (`uv run train.py`) must complete 5-fold cross-validation and evaluation in **under 60 seconds**.
    - If an experiment exceeds 60 seconds, it is treated as a failure and reverted.
-3. **Absolute Isolation of `test.csv`**:
-   - `test.csv` is locked out of reach. Never load, probe, or evaluate `test.csv` during research loops.
+3. **Absolute Isolation of `data/test.csv`**:
+   - `data/test.csv` is locked out of reach. Never load, probe, or evaluate `data/test.csv` during research loops.
 4. **No Heavyweight MLOps**:
    - Do not install WandB, MLflow, Docker, or external servers. Keep dependencies limited to `uv` and standard tabular packages (`pandas`, `numpy`, `scikit-learn`, `lightgbm`, `xgboost`, `rich`).
 5. **The Simplicity Criterion**:

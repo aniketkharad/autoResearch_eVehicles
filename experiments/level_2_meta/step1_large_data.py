@@ -19,14 +19,15 @@ from sklearn.preprocessing import OrdinalEncoder
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("step1_large_data")
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-BASE_DIR = PROJECT_ROOT / "level_2_meta"
+BASE_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = BASE_DIR.parent.parent
+DATA_DIR = PROJECT_ROOT / "data"
 CACHE_LARGE_DIR = BASE_DIR / "cache_large"
 RESULTS_LARGE_DIR = BASE_DIR / "results_large"
 
-TRAIN_CSV = PROJECT_ROOT / "train.csv"
-TEST_CSV = PROJECT_ROOT / "test.csv"
-SPLITS_FILE = PROJECT_ROOT / "splits.npy"
+TRAIN_CSV = DATA_DIR / "train.csv"
+TEST_CSV = DATA_DIR / "test.csv"
+SPLITS_FILE = DATA_DIR / "splits.npy"
 
 TARGET_COL = "Will_Buy_EV"
 ID_COL = "id"

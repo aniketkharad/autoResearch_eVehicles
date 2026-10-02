@@ -38,8 +38,9 @@ N_JOBS = 8
 MODEL_ARCHITECTURE = "ensemble_asymmetric_depth5_xgb_lgb_netgreen"
 EXPERIMENT_DESCRIPTION = "Iteration 14: Asymmetric ensemble - Depth-5 ultra-high-res XGBoost (max_bin=4096, lr=0.092, eval_metric=logloss, net_green_subsidy + sub_x_inc, w=0.62) + LightGBM (leaves=36, lr=0.088, max_bin=1024, w=0.38)"
 
-RESULTS_FILE = Path("results.tsv")
-HISTORY_FILE = Path(".results_history.tsv")
+BASE_DIR = Path(__file__).resolve().parent
+RESULTS_FILE = BASE_DIR / "results.tsv"
+HISTORY_FILE = BASE_DIR / ".results_history.tsv"
 HEADER = ["timestamp", "commit_hash", "model_architecture", "val_roc_auc", "status", "description"]
 
 

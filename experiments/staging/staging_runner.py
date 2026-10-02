@@ -13,14 +13,16 @@ from __future__ import annotations
 
 import gc
 import os
+from pathlib import Path
 import sys
 import time
 import warnings
 
 warnings.filterwarnings("ignore")
 
-# Parent dir for prepare.py imports
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Project root for prepare.py imports
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(PROJECT_ROOT))
 
 import lightgbm as lgb
 import numpy as np
@@ -331,9 +333,8 @@ def run_arch(
 # ──────────────────────────────────────────────────────────────────────────────
 def main():
     t_start = time.time()
-    BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    STAGE = os.path.join(BASE, "staging")
-    os.makedirs(STAGE, exist_ok=True)
+    STAGE = Path(__file__).resolve().parent
+    DATA_DIR = PROJECT_ROOT / "data"
 
     print("=" * 70)
     print("  STAGING MODEL BAKE-OFF")
@@ -345,7 +346,7 @@ def main():
     print("\n[1/3] Loading data …")
     X_raw, y = load_train_data()
     splits = load_splits()
-    test_df = pd.read_csv(os.path.join(BASE, "test.csv"))
+    test_df = pd.read_csv(DATA_DIR / "test.csv")
     test_ids = test_df["id"].values
     test_feat = test_df.drop(columns=["id"])
     del test_df; gc.collect()

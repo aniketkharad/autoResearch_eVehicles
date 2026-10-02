@@ -30,7 +30,8 @@ from sklearn.metrics import roc_auc_score
 # ---------------------------------------------------------------------------
 SEED = 42
 BASE_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = BASE_DIR.parent
+PROJECT_ROOT = BASE_DIR.parent.parent
+DATA_DIR = PROJECT_ROOT / "data"
 CACHE_DIR = BASE_DIR / "cache"
 RESULTS_DIR = BASE_DIR / "results"
 OPTUNA_DIR = BASE_DIR / "optuna"

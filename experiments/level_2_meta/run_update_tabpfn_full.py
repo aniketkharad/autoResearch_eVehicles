@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 logger = logging.getLogger("run_update_tabpfn_full")
 
 BASE_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = BASE_DIR.parent
+PROJECT_ROOT = BASE_DIR.parent.parent
 
 
 def run_cmd(cmd: list[str], desc: str) -> None:
@@ -40,19 +40,19 @@ def main():
 
     # Step 1: Train full TabPFN-3.5
     run_cmd(
-        ["uv", "run", "python", "level_2_meta/train_tabpfn_large.py", "--force"],
+        ["uv", "run", "python", "experiments/level_2_meta/train_tabpfn_large.py", "--force"],
         "Step 1: Train Full TabPFN-3.5 (5-Fold CV on Apple Silicon MPS)",
     )
 
     # Step 2: Level-2 Stacking & Multi-Start Weight Optimization
     run_cmd(
-        ["uv", "run", "python", "level_2_meta/stack_large.py"],
+        ["uv", "run", "python", "experiments/level_2_meta/stack_large.py"],
         "Step 2: Level-2 Stacking Diversity Analysis & Weight Optimization (Nelder-Mead / SLSQP)",
     )
 
     # Step 3: Kaggle Submission
     run_cmd(
-        ["uv", "run", "python", "level_2_meta/submit_large.py"],
+        ["uv", "run", "python", "experiments/level_2_meta/submit_large.py"],
         "Step 3: Test Prediction Blending & Kaggle Competition Submission",
     )
 
